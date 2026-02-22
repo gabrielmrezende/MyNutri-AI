@@ -54,6 +54,13 @@ class Anamnese(BaseModel):
     )
 
 
+class ItemRefeicao(BaseModel):
+    """Um item/alimento da refeição com quantidade e unidade (gramatura, porção caseira)."""
+    nome: str = Field(description="Nome do alimento ou preparação")
+    quantidade: Optional[str] = None  # "50", "1", "2" — pode ser número ou texto (ex.: "1/2")
+    unidade: Optional[str] = None  # "g", "ml", "xícara", "fatia", "unidade", "colher de sopa"
+
+
 class Refeicao(BaseModel):
     nome: str = Field(description="Ex.: Café da manhã, Almoço, Lanche da tarde")
     horario_sugerido: Optional[str] = None
@@ -61,6 +68,10 @@ class Refeicao(BaseModel):
         description="Descrição em linguagem acessível, com porções caseiras sempre que possível."
     )
     observacoes: Optional[str] = None
+    itens: List[ItemRefeicao] = Field(
+        default_factory=list,
+        description="Lista opcional de itens com quantidade e unidade (gramatura, porções).",
+    )
 
 
 class PlanoAlimentar(BaseModel):

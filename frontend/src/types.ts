@@ -37,11 +37,18 @@ export type Anamnese = {
   idioma_plano: string;
 };
 
+export type ItemRefeicao = {
+  nome: string;
+  quantidade?: string;
+  unidade?: string;
+};
+
 export type Refeicao = {
   nome: string;
   horario_sugerido?: string;
   descricao: string;
   observacoes?: string;
+  itens?: ItemRefeicao[];
 };
 
 export type PlanoAlimentar = {
