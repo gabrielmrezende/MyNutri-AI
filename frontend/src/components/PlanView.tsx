@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { PlanoAlimentar, Refeicao } from "../types";
+import { DietDashboard } from "./DietDashboard";
 
 type Props = {
   plano: PlanoAlimentar | null;
@@ -106,6 +107,8 @@ export function PlanView({ plano, loading, error }: Props) {
 
   return (
     <>
+      <DietDashboard plano={plano} />
+
       <div className="card">
         <h2>Seu plano alimentar educativo</h2>
         <p>{plano.resumo_geral}</p>

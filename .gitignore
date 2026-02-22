@@ -9,6 +9,9 @@ backend/.ruff_cache/
 backend/.coverage
 backend/.env
 backend/.env.*
+backend/*.db
+backend/*.sqlite
+backend/*.sqlite3
 
 # Frontend Node
 frontend/node_modules/

@@ -8,6 +8,9 @@ import { PLANO_ALIMENTAR_GENERICO } from "./data/planoGenerico";
 
 type Aba = "app" | "doc";
 
+/** Nome do usuário fictício (sem autenticação por enquanto). */
+const USUARIO_FICTICIO = "Usuário demonstração";
+
 function App() {
   const [aba, setAba] = useState<Aba>("app");
   const [plano, setPlano] = useState<PlanoAlimentar | null>(null);
@@ -53,11 +56,18 @@ function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>MyNutri AI</h1>
-        <p>
-          Planejamento alimentar educativo com apoio de IA, pensado para quem não tem acesso
-          fácil a acompanhamento nutricional.
-        </p>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", flexWrap: "wrap", gap: "0.5rem" }}>
+          <div>
+            <h1>MyNutri AI</h1>
+            <p>
+              Planejamento alimentar educativo com apoio de IA, pensado para quem não tem acesso
+              fácil a acompanhamento nutricional.
+            </p>
+          </div>
+          <span style={{ fontSize: "0.9rem", color: "#666" }} title="Modo demonstração, sem login">
+            {USUARIO_FICTICIO}
+          </span>
+        </div>
         <nav className="app-tabs" aria-label="Navegação principal">
           <button
             type="button"

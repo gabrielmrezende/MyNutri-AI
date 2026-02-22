@@ -24,6 +24,10 @@
   --shadow-lg: 0 12px 32px rgba(22, 163, 74, 0.1);
   --font-sans: "DM Sans", system-ui, -apple-system, sans-serif;
   --transition: 0.2s ease;
+  /* Dashboard: macros */
+  --macro-protein: #2563eb;
+  --macro-carb: #16a34a;
+  --macro-fat: #ea580c;
 }
 
 *,
@@ -529,6 +533,508 @@ button:disabled {
   font-weight: 500;
 }
 
+/* ========== Diet Dashboard ========== */
+.diet-dashboard {
+  margin-bottom: 32px;
+}
+
+.diet-dashboard-header {
+  margin-bottom: 22px;
+}
+
+.diet-dashboard-titulo {
+  margin: 0 0 8px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+.diet-dashboard-titulo::after {
+  content: "";
+  display: block;
+  width: 40px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+  border-radius: 2px;
+  margin-top: 8px;
+}
+
+.diet-dashboard-subtitulo {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.diet-dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.diet-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-sm);
+  padding: 22px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.diet-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--accent-soft-strong);
+}
+
+.diet-card--hero {
+  grid-column: span 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+  background: linear-gradient(160deg, var(--accent-soft) 0%, rgba(255, 255, 255, 0.95) 50%);
+  border-color: var(--accent-soft-strong);
+  position: relative;
+  overflow: hidden;
+}
+
+.diet-card--hero::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, var(--accent-soft) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.diet-hero-icon {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 10px;
+  color: var(--accent);
+  opacity: 0.9;
+}
+
+.diet-hero-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.diet-card-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+}
+
+.diet-card-kcal {
+  font-size: 2.75rem;
+  font-weight: 800;
+  color: var(--accent);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  animation: diet-kcal-in 0.6s ease-out;
+}
+
+@keyframes diet-kcal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.diet-card-unit {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.diet-card--macros {
+  grid-column: span 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.diet-card-heading {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text);
+  text-align: center;
+}
+
+/* Donut SVG interativo */
+.diet-donut-wrap {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  flex-shrink: 0;
+}
+
+.diet-donut-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.diet-donut-segment {
+  cursor: pointer;
+  transition: opacity 0.2s ease, filter 0.2s ease;
+}
+
+.diet-donut-segment:hover {
+  opacity: 1;
+  filter: brightness(1.1);
+}
+
+.diet-donut-wrap:has([data-segment]:hover) .diet-donut-segment:not(:hover) {
+  opacity: 0.5;
+}
+
+.diet-donut-wrap--hover-protein .diet-donut-segment:not([data-segment="protein"]) { opacity: 0.5; }
+.diet-donut-wrap--hover-carb .diet-donut-segment:not([data-segment="carb"]) { opacity: 0.5; }
+.diet-donut-wrap--hover-fat .diet-donut-segment:not([data-segment="fat"]) { opacity: 0.5; }
+
+.diet-donut-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.diet-donut-total-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.diet-donut-tooltip-inner {
+  font-size: 0.6875rem;
+  text-align: center;
+  color: var(--text);
+  line-height: 1.35;
+  padding: 4px 8px;
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-subtle);
+}
+
+.diet-donut-tooltip-inner strong {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--accent);
+}
+
+.diet-macro-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.diet-macro-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  cursor: default;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.diet-macro-item:hover,
+.diet-macro-item--active {
+  background: var(--bg-muted);
+  color: var(--text);
+}
+
+.diet-macro-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px var(--bg-card);
+}
+
+.diet-macro-dot--protein { background: var(--macro-protein); }
+.diet-macro-dot--carb { background: var(--macro-carb); }
+.diet-macro-dot--fat { background: var(--macro-fat); }
+
+.diet-card--refeicoes {
+  grid-column: span 2;
+}
+
+.diet-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.diet-bar-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr 52px;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  padding: 6px 0;
+  border-radius: var(--radius-sm);
+  transition: background 0.2s ease;
+}
+
+.diet-bar-row:hover,
+.diet-bar-row--hover {
+  background: var(--bg-muted);
+}
+
+.diet-bar-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.diet-bar-nome {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.diet-bar-horario {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+}
+
+.diet-bar-track {
+  height: 12px;
+  background: var(--bg-muted);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.diet-bar-fill {
+  height: 100%;
+  min-width: 4px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+  border-radius: var(--radius-pill);
+  transition: width 0.6s cubic-bezier(0.34, 1.2, 0.64, 1);
+  animation: diet-bar-grow 0.8s ease-out backwards;
+}
+
+.diet-bar-row:nth-child(1) .diet-bar-fill { animation-delay: 0.05s; }
+.diet-bar-row:nth-child(2) .diet-bar-fill { animation-delay: 0.1s; }
+.diet-bar-row:nth-child(3) .diet-bar-fill { animation-delay: 0.15s; }
+.diet-bar-row:nth-child(4) .diet-bar-fill { animation-delay: 0.2s; }
+.diet-bar-row:nth-child(5) .diet-bar-fill { animation-delay: 0.25s; }
+.diet-bar-row:nth-child(6) .diet-bar-fill { animation-delay: 0.3s; }
+
+@keyframes diet-bar-grow {
+  from { width: 0 !important; }
+}
+
+.diet-bar-value {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-align: right;
+}
+
+.diet-bar-tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  transform: translateX(-50%) translateY(-6px);
+  padding: 6px 10px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text);
+  background: var(--text);
+  color: var(--bg-card);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  box-shadow: var(--shadow-lg);
+  z-index: 2;
+  animation: diet-tooltip-in 0.15s ease;
+}
+
+.diet-bar-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -6px;
+  border: 6px solid transparent;
+  border-top-color: var(--text);
+}
+
+@keyframes diet-tooltip-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-6px);
+  }
+}
+
+.diet-card--stat {
+  grid-column: span 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 18px 14px;
+}
+
+.diet-card--stat:hover {
+  transform: translateY(-2px);
+}
+
+.diet-stat-icon {
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.diet-stat-value {
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+}
+
+.diet-stat-value--small {
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.diet-stat-label {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.diet-card--dica {
+  grid-column: span 2;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, var(--bg-card) 100%);
+  border-color: var(--border-subtle);
+}
+
+.diet-dica-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.diet-card--dica p {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.diet-card--dica strong {
+  color: var(--text);
+}
+
+.diet-dashboard-aviso {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 10px 14px;
+  background: var(--bg-muted);
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border-subtle);
+}
+
+/* Dashboard responsivo */
+@media (max-width: 900px) {
+  .diet-dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .diet-card--hero,
+  .diet-card--macros,
+  .diet-card--refeicoes,
+  .diet-card--dica {
+    grid-column: span 2;
+  }
+
+  .diet-card--stat {
+    grid-column: span 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .diet-dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .diet-card--hero,
+  .diet-card--macros,
+  .diet-card--refeicoes,
+  .diet-card--stat,
+  .diet-card--dica {
+    grid-column: span 1;
+  }
+
+  .diet-card-kcal {
+    font-size: 2.25rem;
+  }
+
+  .diet-donut-wrap {
+    width: 120px;
+    height: 120px;
+  }
+
+  .diet-bar-row {
+    grid-template-columns: 1fr 1fr 46px;
+    gap: 10px;
+  }
+
+  .diet-bar-value {
+    font-size: 0.75rem;
+  }
+
+  .diet-bar-tooltip {
+    font-size: 0.6875rem;
+    padding: 5px 8px;
+    white-space: normal;
+    max-width: 180px;
+    text-align: center;
+  }
+}
+
 /* Modal de detalhe da refeição */
 .refeicao-modal-overlay {
   position: fixed;
@@ -799,4 +1305,96 @@ button:disabled {
   .refeicao-tabela td {
     padding: 8px 10px;
   }
+}
+
+/* Estilos de autenticação */
+.auth-container {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.auth-container h2 {
+  margin: 0 0 1.5rem;
+  font-size: 1.5rem;
+  color: var(--text);
+  text-align: center;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.auth-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.auth-form label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.auth-form input {
+  padding: 0.75rem;
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-family: inherit;
+  background: var(--bg);
+  color: var(--text);
+  transition: border-color var(--transition);
+}
+
+.auth-form input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.auth-form input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.auth-form button[type="submit"] {
+  margin-top: 0.5rem;
+}
+
+.error-message {
+  padding: 0.75rem;
+  background: var(--danger-soft);
+  color: var(--danger);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.auth-switch {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.auth-switch .link {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  font-size: inherit;
+  font-family: inherit;
+}
+
+.auth-switch .link:hover {
+  color: var(--accent-hover);
 }

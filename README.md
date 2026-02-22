@@ -1,5 +1,7 @@
 # MyNutri AI
 
+Sistema de planejamento alimentar educativo com IA. **Agora com sistema de autenticação de usuários!**
+
 Siga os passos abaixo para rodar a aplicação. É preciso **dois terminais** (um para o backend e outro para o frontend).
 
 ---
@@ -24,10 +26,12 @@ Siga os passos abaixo para rodar a aplicação. É preciso **dois terminais** (u
    ```
    No `.env`, defina `OPENAI_API_KEY=sk-sua-chave-aqui`. Se não criar o arquivo ou deixar a chave em branco, o backend funciona normalmente e retorna um plano de demonstração.
 
-3. Instale as dependências:
+3. **Instale as dependências** (incluindo as novas para autenticação):
    ```powershell
    pip install -r requirements.txt
    ```
+   
+   Isso instalará: FastAPI, SQLAlchemy (banco de dados), bcrypt (hash de senhas), python-jose (JWT), entre outras.
 
 4. Inicie o servidor:
    ```powershell
@@ -35,7 +39,9 @@ Siga os passos abaixo para rodar a aplicação. É preciso **dois terminais** (u
    ```
 
    Deve aparecer algo como: `Uvicorn running on http://127.0.0.1:8000`.  
-   Teste no navegador: [http://127.0.0.1:8000/health](http://127.0.0.1:8000/health) — deve retornar `{"status":"ok"}`.
+   - O banco de dados SQLite (`mynutri.db`) será criado automaticamente na primeira execução.
+   - Teste no navegador: [http://127.0.0.1:8000/health](http://127.0.0.1:8000/health) — deve retornar `{"status":"ok"}`.
+   - Documentação da API: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
 ---
 
@@ -85,13 +91,37 @@ Se aparecer erro dizendo que *a execução de scripts foi desabilitada*, use a *
 
 ---
 
+---
+
+## Sistema de Autenticação
+
+O sistema agora requer **login ou registro** antes de usar:
+
+1. **Primeira vez?** Clique em "Registre-se" na tela de login
+2. Preencha: email, nome de usuário e senha (mínimo 6 caracteres)
+3. Após o registro, você será logado automaticamente
+4. **Já tem conta?** Faça login com seu nome de usuário/email e senha
+
+**Nota:** O token de autenticação fica salvo no navegador. Você só precisa fazer login novamente se:
+- Fizer logout manualmente
+- Limpar os dados do navegador
+- O token expirar (após 7 dias)
+
+---
+
 ## Erros comuns
 
-- **Backend: "No module named 'pydantic_settings'"**  
-  Rode: `pip install -r requirements.txt`.
+- **Backend: "No module named 'pydantic_settings'" ou "No module named 'sqlalchemy'"**  
+  Rode: `pip install -r requirements.txt` para instalar todas as dependências.
+
+- **Backend: Erro ao iniciar relacionado ao banco de dados**  
+  Certifique-se de que tem permissão de escrita na pasta `backend`. O arquivo `mynutri.db` será criado automaticamente.
 
 - **"Failed to fetch" ao gerar o plano**  
   O frontend não conseguiu falar com o backend. **Deixe o backend rodando** antes de usar "Gerar plano": abra um terminal na pasta `backend` e rode `uvicorn app.main:app --reload`. Teste no navegador: http://127.0.0.1:8000/health deve retornar `{"status":"ok"}`.
+
+- **Frontend: "Sessão expirada" ou erro 401**  
+  Faça logout e login novamente. O token pode ter expirado ou sido invalidado.
 
 - **Frontend: página em branco ou erro de rede**  
   Confira se o backend está rodando em http://127.0.0.1:8000 e se em http://127.0.0.1:8000/health retorna `{"status":"ok"}`.

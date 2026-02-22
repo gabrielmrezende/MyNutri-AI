@@ -84,3 +84,29 @@ class PlanoResponse(BaseModel):
     plano: PlanoAlimentar
     modelo_utilizado: str
 
+
+# Schemas de autenticação
+class UserRegister(BaseModel):
+    email: str = Field(..., description="Email do usuário")
+    username: str = Field(..., min_length=3, max_length=50, description="Nome de usuário")
+    password: str = Field(..., min_length=6, description="Senha (mínimo 6 caracteres)")
+
+
+class UserLogin(BaseModel):
+    username: str = Field(..., description="Nome de usuário ou email")
+    password: str = Field(..., description="Senha")
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+
+class UserResponse(BaseModel):
+    id: int
+    email: str
+    username: str
+
+    class Config:
+        from_attributes = True
+
