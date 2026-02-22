@@ -1,0 +1,28 @@
+# Backend Python
+backend/__pycache__/
+backend/*.py[cod]
+backend/.venv/
+backend/venv/
+backend/.mypy_cache/
+backend/.pytest_cache/
+backend/.ruff_cache/
+backend/.coverage
+backend/.env
+backend/.env.*
+
+# Frontend Node
+frontend/node_modules/
+frontend/.turbo/
+frontend/.next/
+frontend/dist/
+frontend/build/
+frontend/.env
+frontend/.env.*
+
+# Editor
+.vscode/
+.cursor/
+
+# Sistema
+.DS_Store
+Thumbs.db
