@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { PlanoAlimentar, Refeicao } from "../types";
 import { DietDashboard } from "./DietDashboard";
+import { gerarPdfPlano } from "../utils/gerarPdfPlano";
 
 type Props = {
   plano: PlanoAlimentar | null;
@@ -110,7 +111,20 @@ export function PlanView({ plano, loading, error }: Props) {
       <DietDashboard plano={plano} />
 
       <div className="card">
-        <h2>Seu plano alimentar educativo</h2>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: "12px",
+            marginBottom: "8px",
+          }}
+        >
+          <h2 style={{ marginBottom: 0 }}>Seu plano alimentar educativo</h2>
+          <button type="button" className="secondary" onClick={() => gerarPdfPlano(plano)}>
+            Baixar plano em PDF
+          </button>
+        </div>
         <p>{plano.resumo_geral}</p>
 
         <h3>Refeições sugeridas</h3>
