@@ -5,7 +5,7 @@ from fastapi import HTTPException
 from openai import OpenAI
 
 from .config import get_settings
-from .schemas import Anamnese, PlanoAlimentar
+from .schemas import Anamnese, ExplicacaoGeracao, PlanoAlimentar
 
 
 def _get_client():
@@ -28,7 +28,9 @@ Regras importantes:
 - Se as informações forem insuficientes, assuma um contexto geral saudável e destaque que o plano é apenas um exemplo.
 
 FORMATO DA RESPOSTA:
-Você DEVE responder estritamente em JSON válido. Cada refeição pode incluir opcionalmente "itens" com alimentos e quantidades (gramatura ou porção caseira):
+Você DEVE responder estritamente em um ÚNICO JSON válido com o plano E a explicação da geração ("explicacao_geracao"). Cada refeição pode incluir opcionalmente "itens" com alimentos e quantidades (gramatura ou porção caseira).
+
+Estrutura obrigatória:
 {
   "resumo_geral": "texto",
   "refeicoes": [
@@ -44,14 +46,65 @@ Você DEVE responder estritamente em JSON válido. Cada refeição pode incluir 
       ]
     }
   ],
-  "avisos_importantes": ["texto 1", "texto 2"]
+  "avisos_importantes": ["texto 1", "texto 2"],
+  "explicacao_geracao": {
+    "resumo_raciocinio": "Um parágrafo explicando em linguagem simples como você montou o plano: que dados da anamnese usou, qual a lógica geral (ex.: déficit calórico leve para objetivo X, distribuição em 5 refeições para melhor adesão).",
+    "calculos": [
+      { "nome": "IMC", "valor": "22,5", "unidade": "kg/m²", "descricao": "Índice de massa corporal: peso dividido pela altura ao quadrado. Usado como referência de faixa de peso." },
+      { "nome": "TMB", "valor": "1500", "unidade": "kcal", "descricao": "Taxa metabólica basal: calorias que o corpo gasta em repouso. Fórmula de Harris-Benedict ou similar conforme sexo/idade." },
+      { "nome": "Calorias diárias estimadas", "valor": "1800", "unidade": "kcal", "descricao": "Necessidade energética considerando objetivo (manutenção, déficit ou superávit) e nível de atividade." }
+    ],
+    "criterios_escolhidos": [
+      "Número de refeições escolhido e por quê (ex.: 5 refeições para evitar fome prolongada).",
+      "Horários sugeridos com base na rotina informada.",
+      "Distribuição de macros (proteína/carboidrato/gordura) conforme objetivo."
+    ],
+    "adaptacoes_ao_perfil": [
+      "Como as preferências alimentares foram consideradas (gostos, desgostos).",
+      "Como restrições ou condições de saúde foram respeitadas (sem prescrição clínica).",
+      "Ajustes ao objetivo principal (emagrecimento, ganho de massa, etc.)."
+    ]
+  }
 }
-O campo "itens" é opcional. Use "quantidade" como número ou texto (ex.: "1/2") e "unidade" como "g", "ml", "xícara", "colher de sopa", "fatia", "unidade", etc.
+
+Regras para explicacao_geracao:
+- Se peso/altura não forem informados, omita IMC ou deixe valor null e explique na descrição que não foi possível calcular.
+- Faça os cálculos (TMB, calorias) quando houver dados suficientes; use estimativas conservadoras quando faltar informação.
+- resumo_raciocinio, calculos, criterios_escolhidos e adaptacoes_ao_perfil devem ser no mesmo idioma que o plano (idioma_plano).
+- O campo "itens" das refeições é opcional. Use "quantidade" como número ou texto (ex.: "1/2") e "unidade" como "g", "ml", "xícara", "colher de sopa", "fatia", "unidade", etc.
 """
 
 
 def build_user_prompt(anamnese: Anamnese) -> str:
     return json.dumps(anamnese.model_dump(), ensure_ascii=False, indent=2)
+
+
+def _explicacao_demonstracao(anamnese: Anamnese) -> ExplicacaoGeracao:
+    """Explicação de exemplo para o modo demonstração."""
+    objetivo = anamnese.objetivos.objetivo_principal or "saúde geral"
+    return ExplicacaoGeracao(
+        resumo_raciocinio=(
+            f"Este é um plano de demonstração. Em produção, a IA usaria sua anamnese (objetivo: {objetivo}, "
+            "dados básicos, rotina e preferências) para calcular indicadores como IMC e TMB, "
+            "estimar necessidade calórica e montar refeições adaptadas ao seu perfil. "
+            "A aba 'Como a IA pensou' mostra como isso seria explicado após uma geração real."
+        ),
+        calculos=[
+            {"nome": "IMC", "valor": "—", "unidade": "kg/m²", "descricao": "Com peso e altura informados, a IA calcularia o IMC (peso ÷ altura²) para contextualizar a faixa de peso."},
+            {"nome": "TMB", "valor": "—", "unidade": "kcal", "descricao": "Taxa metabólica basal seria estimada (ex.: Harris-Benedict) com idade, sexo, peso e altura."},
+            {"nome": "Calorias diárias", "valor": "—", "unidade": "kcal", "descricao": "A IA ajustaria as calorias conforme seu objetivo (déficit, manutenção ou superávit) e nível de atividade."},
+        ],
+        criterios_escolhidos=[
+            "5 refeições ao dia para melhor distribuição e saciedade.",
+            "Horários compatíveis com rotina típica (acordar ~7h, dormir ~22h).",
+            "Prioridade a proteína e fibras no café e almoço.",
+        ],
+        adaptacoes_ao_perfil=[
+            "Preferências e restrições da anamnese seriam respeitadas na escolha dos alimentos.",
+            "Condições de saúde seriam consideradas sem prescrição clínica (sempre com aviso para acompanhamento profissional).",
+            f"Objetivo principal ({objetivo}) guiaria o balanço energético e a escolha de porções.",
+        ],
+    )
 
 
 def _plano_demonstracao(_anamnese: Anamnese) -> PlanoAlimentar:
@@ -130,11 +183,11 @@ def _plano_demonstracao(_anamnese: Anamnese) -> PlanoAlimentar:
     )
 
 
-def gerar_plano(anamnese: Anamnese) -> tuple[PlanoAlimentar, str]:
+def gerar_plano(anamnese: Anamnese) -> tuple[PlanoAlimentar, str, ExplicacaoGeracao | None]:
     settings = get_settings()
     client = _get_client()
     if client is None:
-        return _plano_demonstracao(anamnese), "demonstracao"
+        return _plano_demonstracao(anamnese), "demonstracao", _explicacao_demonstracao(anamnese)
 
     try:
         completion = client.chat.completions.create(
@@ -174,5 +227,12 @@ def gerar_plano(anamnese: Anamnese) -> tuple[PlanoAlimentar, str]:
             detail="Não foi possível interpretar o plano alimentar retornado pela IA.",
         ) from exc
 
-    return plano, settings.openai_model or "gpt-4o-mini"
+    explicacao: ExplicacaoGeracao | None = None
+    if "explicacao_geracao" in data and data["explicacao_geracao"]:
+        try:
+            explicacao = ExplicacaoGeracao.model_validate(data["explicacao_geracao"])
+        except Exception:  # noqa: S110
+            pass
+
+    return plano, settings.openai_model or "gpt-4o-mini", explicacao
 

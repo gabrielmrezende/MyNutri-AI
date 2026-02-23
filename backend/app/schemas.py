@@ -80,9 +80,38 @@ class PlanoAlimentar(BaseModel):
     avisos_importantes: List[str]
 
 
+class CalculoNutricional(BaseModel):
+    """Um cálculo ou estimativa feita pela IA (ex.: IMC, TMB, calorias)."""
+    nome: str = Field(description="Ex.: IMC, TMB, Calorias diárias")
+    valor: Optional[str] = Field(default=None, description="Resultado ex.: 22,5 ou 1800 kcal")
+    unidade: Optional[str] = Field(default=None, description="Ex.: kg/m², kcal")
+    descricao: str = Field(description="Explicação em linguagem simples do que foi calculado e como")
+
+
+class ExplicacaoGeracao(BaseModel):
+    """Explicação de como a IA estruturou o plano (transparência e educação)."""
+    resumo_raciocinio: Optional[str] = Field(
+        default=None,
+        description="Parágrafo resumindo a lógica geral usada para montar o plano",
+    )
+    calculos: List[CalculoNutricional] = Field(
+        default_factory=list,
+        description="Cálculos feitos (IMC, TMB, necessidade calórica, distribuição de macros etc.)",
+    )
+    criterios_escolhidos: List[str] = Field(
+        default_factory=list,
+        description="Critérios que guiaram as escolhas (ex.: número de refeições, horários)",
+    )
+    adaptacoes_ao_perfil: List[str] = Field(
+        default_factory=list,
+        description="Como o plano foi adaptado ao perfil (preferências, restrições, objetivo)",
+    )
+
+
 class PlanoResponse(BaseModel):
     plano: PlanoAlimentar
     modelo_utilizado: str
+    explicacao_geracao: Optional[ExplicacaoGeracao] = None
 
 
 # Schemas de autenticação

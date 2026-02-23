@@ -1,25 +1,32 @@
 import { useState } from "react";
 import { AnamneseForm } from "./components/AnamneseForm";
 import { PlanView } from "./components/PlanView";
+import { RaciocinioIAView } from "./components/RaciocinioIAView";
 import { Documentacao } from "./components/Documentacao";
-import type { PlanoAlimentar } from "./types";
+import type { ExplicacaoGeracao, PlanoAlimentar } from "./types";
 import { gerarPlano } from "./services/api";
-import { PLANO_ALIMENTAR_GENERICO } from "./data/planoGenerico";
+import { EXPLICACAO_GENERICA, PLANO_ALIMENTAR_GENERICO } from "./data/planoGenerico";
 
 type Aba = "app" | "doc";
+type AbaResultado = "plano" | "raciocinio";
 
 /** Nome do usuário fictício (sem autenticação por enquanto). */
 const USUARIO_FICTICIO = "Usuário demonstração";
 
 function App() {
   const [aba, setAba] = useState<Aba>("app");
+  const [abaResultado, setAbaResultado] = useState<AbaResultado>("plano");
   const [plano, setPlano] = useState<PlanoAlimentar | null>(null);
+  const [explicacaoGeracao, setExplicacaoGeracao] = useState<ExplicacaoGeracao | null>(null);
+  const [modeloUtilizado, setModeloUtilizado] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const usarPlanoGenerico = () => {
     setError(null);
     setPlano(PLANO_ALIMENTAR_GENERICO);
+    setExplicacaoGeracao(EXPLICACAO_GENERICA);
+    setModeloUtilizado("exemplo");
   };
 
   const handleSubmit = async (data: Parameters<typeof gerarPlano>[0]) => {
@@ -28,6 +35,8 @@ function App() {
     try {
       const response = await gerarPlano(data);
       setPlano(response.plano);
+      setExplicacaoGeracao(response.explicacao_geracao ?? null);
+      setModeloUtilizado(response.modelo_utilizado ?? "");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Erro inesperado";
       const ehErroDeConexao =
@@ -36,6 +45,8 @@ function App() {
         message.includes("Erro de rede");
       if (ehErroDeConexao) {
         setPlano(PLANO_ALIMENTAR_GENERICO);
+        setExplicacaoGeracao(EXPLICACAO_GENERICA);
+        setModeloUtilizado("exemplo");
         setError(null);
       } else {
         setError(message);
@@ -50,7 +61,10 @@ function App() {
 
   const voltarParaAnamnese = () => {
     setPlano(null);
+    setExplicacaoGeracao(null);
+    setModeloUtilizado("");
     setError(null);
+    setAbaResultado("plano");
   };
 
   return (
@@ -105,12 +119,41 @@ function App() {
       ) : (
         <main className="layout layout--resultado">
           <section className="layout-column layout-column--plano">
-            <div className="plano-actions">
+            <div className="plano-actions plano-actions--with-tabs">
               <button type="button" className="secondary" onClick={voltarParaAnamnese}>
                 ← Nova anamnese
               </button>
+              <div className="resultado-tabs" role="tablist" aria-label="Visualização do resultado">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={abaResultado === "plano"}
+                  aria-controls="painel-plano"
+                  id="tab-plano"
+                  className={`resultado-tab ${abaResultado === "plano" ? "resultado-tab--active" : ""}`}
+                  onClick={() => setAbaResultado("plano")}
+                >
+                  Seu plano
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={abaResultado === "raciocinio"}
+                  aria-controls="painel-raciocinio"
+                  id="tab-raciocinio"
+                  className={`resultado-tab ${abaResultado === "raciocinio" ? "resultado-tab--active" : ""}`}
+                  onClick={() => setAbaResultado("raciocinio")}
+                >
+                  Como a IA pensou
+                </button>
+              </div>
             </div>
-            <PlanView plano={plano} loading={loading} error={error} />
+            <div id="painel-plano" role="tabpanel" aria-labelledby="tab-plano" hidden={abaResultado !== "plano"}>
+              <PlanView plano={plano} loading={loading} error={error} />
+            </div>
+            <div id="painel-raciocinio" role="tabpanel" aria-labelledby="tab-raciocinio" hidden={abaResultado !== "raciocinio"}>
+              <RaciocinioIAView explicacao={explicacaoGeracao} modeloUtilizado={modeloUtilizado} />
+            </div>
           </section>
         </main>
       )}

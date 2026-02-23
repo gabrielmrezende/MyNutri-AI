@@ -57,8 +57,23 @@ export type PlanoAlimentar = {
   avisos_importantes: string[];
 };
 
+export type CalculoNutricional = {
+  nome: string;
+  valor?: string | null;
+  unidade?: string | null;
+  descricao: string;
+};
+
+export type ExplicacaoGeracao = {
+  resumo_raciocinio?: string | null;
+  calculos: CalculoNutricional[];
+  criterios_escolhidos: string[];
+  adaptacoes_ao_perfil: string[];
+};
+
 export type PlanoResponse = {
   plano: PlanoAlimentar;
   modelo_utilizado: string;
+  explicacao_geracao?: ExplicacaoGeracao | null;
 };
 

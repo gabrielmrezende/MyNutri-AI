@@ -41,8 +41,8 @@ def create_app() -> FastAPI:
     @app.post("/api/gerar-plano", response_model=PlanoResponse)
     async def api_gerar_plano(anamnese: Anamnese) -> PlanoResponse:
         """Gera plano alimentar (uso fictício, sem autenticação por enquanto)."""
-        plano, modelo = gerar_plano(anamnese)
-        return PlanoResponse(plano=plano, modelo_utilizado=modelo)
+        plano, modelo, explicacao = gerar_plano(anamnese)
+        return PlanoResponse(plano=plano, modelo_utilizado=modelo, explicacao_geracao=explicacao)
 
     return app
 
